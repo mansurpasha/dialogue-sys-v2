@@ -108,7 +108,7 @@ def get_iterator(src_dataset,
                  num_buckets,
                  src_max_len=None,
                  tgt_max_len=None,
-                 num_threads=4,
+                 num_parallel_calls=4,
                  output_buffer_size=None,
                  skip_count=None):
     """
@@ -117,7 +117,7 @@ def get_iterator(src_dataset,
     :param eos: The 'end of string' string
     :param src_reverse: Whether to reverse the input.
     :param random_seed: Seed used to fuel a pseudo-random number generator.
-    :param num_threads: The number of threads to use for processing elements in parallel.
+    :param num_parallel_calls: The number of threads to use for processing elements in parallel.
     :param output_buffer_size: The number of elements from this dataset from which the new dataset will sample
     :param skip_count: The number of elements of this dataset that should be skipped to form the new dataset.
     """
@@ -126,7 +126,7 @@ def get_iterator(src_dataset,
     sos_id = tf.cast(vocab_table.lookup(tf.constant(sos)), tf.int32)
     eos_id = tf.cast(vocab_table.lookup(tf.constant(eos)), tf.int32)
 
-    dataset = tf.contrib.data.Dataset.zip((src_dataset, tgt_dataset))
+    dataset = tf.data.Dataset.zip((src_dataset, tgt_dataset))
     # Skip the first skip_count elements.
     if skip_count is not None:
         dataset = dataset.skip(count=skip_count)
@@ -134,44 +134,44 @@ def get_iterator(src_dataset,
     dataset = dataset.shuffle(output_buffer_size, random_seed)
     # Split the lines into tokens.
     dataset = dataset.map(lambda src, tgt: (tf.string_split([src]).values, tf.string_split([tgt]).values),
-                          num_threads=num_threads,
-                          output_buffer_size=output_buffer_size)
+                          num_parallel_calls=num_parallel_calls)
+                          #output_buffer_size=output_buffer_size)
 
     # Filter zero length input sequences
     dataset = dataset.filter(lambda src, tgt: tf.logical_and(tf.size(src) > 0, tf.size(tgt) > 0))
 
     if src_max_len:
         dataset = dataset.map(lambda src, tgt: (src[:src_max_len], tgt),
-                              num_threads=num_threads,
-                              output_buffer_size=output_buffer_size)
+                              num_parallel_calls=num_parallel_calls)
+                              #output_buffer_size=output_buffer_size)
     if tgt_max_len:
         dataset = dataset.map(lambda src, tgt: (src, tgt[:tgt_max_len]),
-                              num_threads=num_threads,
-                              output_buffer_size=output_buffer_size)
+                              num_parallel_calls=num_parallel_calls)
+                              #output_buffer_size=output_buffer_size)
     if src_reverse:
         dataset = dataset.map(lambda src, tgt: (tf.reverse(src, axis=0), tgt),
-                              num_threads=num_threads,
-                              output_buffer_size=output_buffer_size)
+                              num_parallel_calls=num_parallel_calls)
+                              #output_buffer_size=output_buffer_size)
 
     # Convert the word strings to ids.  Word strings that are not in the
     # vocab get the lookup table's default_value integer.
     dataset = dataset.map(lambda src, tgt: (tf.cast(vocab_table.lookup(src), tf.int32),
                                             tf.cast(vocab_table.lookup(tgt), tf.int32)),
-                          num_threads=num_threads,
-                          output_buffer_size=output_buffer_size)
+                          num_parallel_calls=num_parallel_calls)
+                          #output_buffer_size=output_buffer_size)
     # Create a tgt_input prefixed with <sos> and a tgt_output suffixed with <eos>.
     dataset = dataset.map(lambda src, tgt: (src,
                                             tf.concat(([sos_id], tgt), axis=0),   # target input
                                             tf.concat((tgt, [eos_id]), axis=0)),  # target output, the input shifted
-                          num_threads=num_threads,
-                          output_buffer_size=output_buffer_size)
-
+                          num_parallel_calls=num_parallel_calls)
+                          #output_buffer_size=output_buffer_size)
     # Add in the word counts.  Subtract one from the target to avoid counting
     # the target_input <eos> tag (resp. target_output <sos> tag) (has not been done) .
     dataset = dataset.map(lambda src, tgt_in, tgt_out: (src, tgt_in, tgt_out,
                                                         tf.size(src), tf.size(tgt_in)),
-                          num_threads=num_threads,
-                          output_buffer_size=output_buffer_size)
+                          num_parallel_calls=num_parallel_calls)
+                          #output_buffer_size=output_buffer_size)
+    dataset.prefetch(output_buffer_size)
 
     # Bucket by source sequence length (buckets for lengths 0-9, 10-19, ...)
     def batching_func(x):
@@ -215,9 +215,13 @@ def get_iterator(src_dataset,
             return batching_func(windowed_data)
         # Maps each consecutive elements in this dataset to a key using key_func to at
         # most window_size elements matching the same key.
-        batched_dataset = dataset.group_by_window(
-            key_func=key_func, reduce_func=reduce_func, window_size=batch_size
-        )
+
+        #batched_dataset = dataset.group_by_window(
+        #    key_func=key_func, reduce_func=reduce_func, window_size=batch_size
+        #)
+        batched_dataset = dataset.apply(tf.contrib.data.group_by_window(key_func=key_func,
+																		reduce_func=reduce_func,
+																		window_size=batch_size))
     else:
         batched_dataset = batching_func(dataset)
     batched_iter = batched_dataset.make_initializable_iterator()

@@ -1,0 +1,13 @@
+-Moved simple_pre.py and run.py to home directory
+-Edited arguments as in TextWrangler
+-Commented out attempt to import fast_tensor_util from tensor_util.py (at start, around line 40)
+-Replaced deprecated TextLineDataSet in train.py with data.TextLineDataSet (instead of contrib.data...) line 300-ish
+-Replaced deprecated DataSet in iterator_utils.py with data.DataSet (instead of contrib.data.DataSet) line 129
+-Replaced num_threads with num_parallel_calls in map function, iterator_utils.py, line 138
+-Commented out num_threads and output_buffer_size in interator_utils.py, line 138
+-Replaced all num_threads with num_parallel_calls, replaced output_buffer_size = N with dataset.prefetch(N) as per https://www.tensorflow.org/versions/r1.6/api_docs/python/tf/contrib/data/Dataset#map
+-Replaced group_by_window with ds.apply(contrib.data.group_by_window(...)) line 220
+-Replaced contrib.data.TextLineDataSet with data.TextLineDataSet in train.py, line 355, 356
+-Replaced contrib.data.DataSet with data.DataSet, line 61, inference.py
+-Modified hparams again
+-Manually edited hparamas files in output/cornell/hparams to correct file path to data

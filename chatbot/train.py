@@ -298,8 +298,8 @@ def create_train_model(model_creator, get_iterator, hparams, scope=None):
     with graph.as_default():
         vocab_table = vocab_utils.create_vocab_tables(vocab_file)
         # Create datasets from file
-        src_dataset = tf.contrib.data.TextLineDataset(src_file)
-        tgt_dataset = tf.contrib.data.TextLineDataset(tgt_file)
+        src_dataset = tf.data.TextLineDataset(src_file)
+        tgt_dataset = tf.data.TextLineDataset(tgt_file)
         # The number of elements of this dataset that should be skipped to form the new dataset.
         skip_count_placeholder = tf.placeholder(shape=(), dtype=tf.int64)
         # Iterator
@@ -352,8 +352,8 @@ def create_eval_model(model_creator, get_iterator, hparams, scope=None):
         src_file_placeholder = tf.placeholder(shape=(), dtype=tf.string)
         tgt_file_placeholder = tf.placeholder(shape=(), dtype=tf.string)
         # Create the datasets from file
-        src_dataset = tf.contrib.data.TextLineDataset(src_file_placeholder)
-        tgt_dataset = tf.contrib.data.TextLineDataset(tgt_file_placeholder)
+        src_dataset = tf.data.TextLineDataset(src_file_placeholder)
+        tgt_dataset = tf.data.TextLineDataset(tgt_file_placeholder)
         # Create the iterator for the dataset. We do not use skip_count here as we evaluate on the full file
         iterator = get_iterator(
             src_dataset=src_dataset,

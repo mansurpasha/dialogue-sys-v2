@@ -1,0 +1,4 @@
+# log_file=/Users/mansurpasha/.git/Dialogue-systems-for-language-learning/output/cornell/log_1531756585
+# Start step 0, lr 1, Mon Jul 16 17:01:35 2018
+  global step 100 lr 1 step-time 0.75s wps 4.52K ppl 764.33 bleu 0.00
+  global step 200 lr 1 step-time 0.80s wps 4.38K ppl 290.46 bleu 0.00
