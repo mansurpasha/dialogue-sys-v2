@@ -1,0 +1,6 @@
+model_checkpoint_path: "/home/map79/git/dialogue-sys-v2/output/cornell/best_bleu/dialogue.ckpt-12000"
+all_model_checkpoint_paths: "/home/map79/git/dialogue-sys-v2/output/cornell/best_bleu/dialogue.ckpt-1000"
+all_model_checkpoint_paths: "/home/map79/git/dialogue-sys-v2/output/cornell/best_bleu/dialogue.ckpt-2000"
+all_model_checkpoint_paths: "/home/map79/git/dialogue-sys-v2/output/cornell/best_bleu/dialogue.ckpt-4000"
+all_model_checkpoint_paths: "/home/map79/git/dialogue-sys-v2/output/cornell/best_bleu/dialogue.ckpt-11000"
+all_model_checkpoint_paths: "/home/map79/git/dialogue-sys-v2/output/cornell/best_bleu/dialogue.ckpt-12000"
